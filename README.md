@@ -1,1 +1,0 @@
-# Vote-Counting-Machine
