@@ -1,37 +1,38 @@
 const fs = require('fs');
-const { off } = require('process');
 
-const getvote = async () => {
+const getvote = () => {
     fs.readFile('./ballot.txt', 'utf-8', (err, data) => {
-        let invalid = false;
+        let abstain = false;
         if(err || data == ""){
-            console.log("Invalid ballot/Abstain");
-            invalid = true;
+            console.log("Abstain.");
+            abstain = true;
         }
         const curDate = new Date();
-        fs.appendFile('./log.txt', JSON.stringify(curDate) + " " + data + "\n", (err) => {
+        fs.appendFile('./log.txt', JSON.stringify(curDate) + " " + data + "\n", async (err) => {
             if(err){
                 console.log(err);
             } else{
-                console.log("Success");
-            }
-        });
-        fs.readFile('./votes.json', 'utf-8', (err, data2) => {
-            if(err) {
-                console.log("Wtf");
-            } else {
-                let pt = JSON.parse(data2);
-                if(invalid) {
-                    pt["Abstain/Invalid"] += 1;
-                } else{
-                    pt[data] += 1;
-                }
-                const datum = JSON.stringify(pt);
-                fs.writeFile('./votes.json', datum, (err) => {
-                    if(err){
+                console.log("Append successful.");
+                fs.readFile('./votes.json', 'utf-8', (err, data2) => {
+                    if(err) {
                         console.log(err);
-                    } else{
-                        console.log("Goods");
+                    } else {
+                        let votesList = JSON.parse(data2);
+                        if(abstain) {
+                            votesList.Abstain += 1;
+                        } else if(data !== "A" && data !== "B" && data !== "C") {
+                            votesList.Invalid += 1;
+                        } else{
+                            votesList[data] += 1;
+                        }
+                        const datum = JSON.stringify(votesList);
+                        fs.writeFile('./votes.json', datum, (err) => {
+                            if(err){
+                                console.log(err);
+                            } else{
+                                console.log("Update successful.");
+                            }
+                        });
                     }
                 });
             }
